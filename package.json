@@ -1,0 +1,19 @@
+{
+    "private": true,
+    "name": "waveform-waltz",
+    "version": "1.0.0",
+    "description": "Jump and slide to the beat!",
+    "homepage": "https://github.com/DaInfLoop/waveform-waltz#readme",
+    "bugs": {
+        "url": "https://github.com/DaInfLoop/waveform-waltz/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/DaInfLoop/waveform-waltz.git"
+    },
+    "author": "DaInfLoop <github+ww@dainfloop.is-a.dev>",
+    "license": "AGPL-3.0-or-later",
+    "devDependencies": {
+        "phaser": "^3.90.0"
+    }
+}

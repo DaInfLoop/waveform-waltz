@@ -1,4 +1,3 @@
-/** @import { AudioEvent } from '../utils/audio.js' */
 import { analyseTrack } from "../utils/audio.js";
 
 export default class GameScene extends Phaser.Scene {
@@ -24,9 +23,11 @@ export default class GameScene extends Phaser.Scene {
     
     update() {
         // runs every frame — your game loop
-        if (this.sound.context.state === 'running' && !this.playing) {
+        const sound = /** @type {Phaser.Sound.WebAudioSoundManager} */ (this.sound);
+
+        if (sound.context.state === 'running' && !this.playing) {
             this.playing = true;
-            this.sound.play('audio1');
+            sound.play('audio1');
         }
     }
 }
