@@ -1,11 +1,20 @@
 /**
-  * @typedef {Object} AudioEvent
-  * @property {number}   time    - Timestamp in seconds
-  * @property {number}   ampL    - Amplitude for the left channel
-  * @property {number}   ampR    - Amplitude for the left channel
-  * @property {number}   ampMean - Amplitude for the left channel
-  * @property {number}   pan     - Audio panning
+  * @typedef {Object} BandData
+  * @property {number} L   - Left channel amplitude (0–1)
+  * @property {number} R   - Right channel amplitude (0–1)
+  * @property {number} avg - Average amplitude
   */
+
+/**
+  * @typedef {Object} AudioEvent
+  * @property {number}   time   - Timestamp in seconds
+  * @property {BandData} amp    - Full-range amplitude
+  * @property {BandData} bass   - Bass frequency
+  * @property {BandData} mid    - Mid frequency
+  * @property {BandData} treble - Treble frequency
+  * @property {number}   pan    - Audio panning
+  */
+
 
 /**
   * Analyse an audio buffer.
@@ -14,11 +23,16 @@
   */
 export async function analyseTrack(audioBuffer) {
     const sampleRate = audioBuffer.sampleRate;
+    const length = audioBuffer.length;
 
-    const L = audioBuffer.getChannelData(0);
-    const R = audioBuffer.numberOfChannels > 1
+    const rawL = audioBuffer.getChannelData(0);
+    const rawR = audioBuffer.numberOfChannels > 1
         ? audioBuffer.getChannelData(1)
-        : L;
+        : rawL;
+
+    const [rawBassL, rawBassR] = await extractBand(audioBuffer, 'lowshelf', 200);
+    const [rawMidL,  rawMidR] = await extractBand(audioBuffer, 'bandpass', 1000);
+    const [rawTrebL, rawTrebR] = await extractBand(audioBuffer, 'highshelf', 4000);
 
     const HOP = 2048;
     const MIN_GAP = 0.4;
@@ -26,19 +40,45 @@ export async function analyseTrack(audioBuffer) {
     const events = [];
     let lastTime = -MIN_GAP;
 
-    for (let i = 0; i < L.length - HOP; i += HOP) {
+    for (let i = 0; i < length - HOP; i += HOP) {
         const time = i / sampleRate;
         if (time - lastTime < MIN_GAP) continue;
 
-        const ampL = rms(L, i, HOP);
-        const ampR = rms(R, i, HOP);
+        const ampL = rms(rawL, i, HOP);
+        const ampR = rms(rawR, i, HOP);
+
+        const bassL = rms(rawBassL, i, HOP);
+        const bassR = rms(rawBassR, i, HOP);
+
+        const midL = rms(rawMidL, i, HOP);
+        const midR = rms(rawMidR, i, HOP);
+
+        const trebL = rms(rawTrebL, i, HOP);
+        const trebR = rms(rawTrebR, i, HOP);
 
         events.push({
             time,
-            ampL,
-            ampR,
-            ampMean:  (ampL + ampR) / 2,
-            pan:  ampL - ampR,
+            amp: {
+                L: ampL,
+                R: ampR,
+                avg: (ampL + ampR) / 2
+            },
+            bass: {
+                L: bassL,
+                R: bassR,
+                avg: (bassL + bassR) / 2
+            },
+            mid: {
+                L: midL,
+                R: midR,
+                avg: (midL + midR) / 2
+            },
+            treble: {
+                L: trebL,
+                R: trebR,
+                avg: (trebL + trebR) / 2
+            },            
+            pan: ampL - ampR,
         });
 
         lastTime = time;
@@ -51,4 +91,31 @@ function rms(pcm, offset, length) {
     let sum = 0;
     for (let i = offset; i < offset + length; i++) sum += pcm[i] * pcm[i];
     return Math.sqrt(sum / length);
+}
+
+async function extractBand(audioBuffer, type, frequency) {
+    const ctx = new OfflineAudioContext(
+        audioBuffer.numberOfChannels,
+        audioBuffer.length,
+        audioBuffer.sampleRate
+    );
+
+    const source = ctx.createBufferSource();
+    source.buffer = audioBuffer;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = type;
+    filter.frequency.value = frequency;
+
+    source.connect(filter);
+    filter.connect(ctx.destination);
+    source.start(0);
+
+    const rendered = await ctx.startRendering();
+    const L = rendered.getChannelData(0);
+    const R = rendered.numberOfChannels > 1
+        ? rendered.getChannelData(1)
+        : L;
+
+    return [L, R];
 }
