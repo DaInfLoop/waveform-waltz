@@ -1,19 +1,17 @@
 import { analyseTrack } from "../utils/audio.js";
 
 export default class GameScene extends Phaser.Scene {
-    /** @type {boolean} Whether the track has started playing */
+    /** @type {boolean} */
     playing = false;
 
-    /** @type {AudioEvent[]} Obstacle events */
+    /** @type {AudioEvent[]} */
     eventData = [];
 
     constructor() {
         super({ key: 'GameScene' })
     }
 
-    preload() {
-        this.load.audio('audio1', './music/audio1.mp3')
-    }
+    preload() {}
 
     async create() {
         // set up game objects here

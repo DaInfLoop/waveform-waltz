@@ -1,5 +1,7 @@
+import LoaderScene from './scenes/LoaderScene.js';
 import GameScene from './scenes/GameScene.js';
 
+/** @type {Phaser.Types.Core.GameConfig} */
 const config = {
     type: Phaser.AUTO,
     width: 1280,
@@ -8,7 +10,7 @@ const config = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [GameScene]
+    scene: [LoaderScene, GameScene]
 };
 
 const game = new Phaser.Game(config);
