@@ -1,5 +1,3 @@
-// @ts-check
-
 /**
   * Analyse an audio buffer.
   * @param {AudioBuffer} audioBuffer - Audio buffer to analyse

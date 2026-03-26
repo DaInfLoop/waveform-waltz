@@ -1,4 +1,5 @@
 import LoaderScene from './scenes/LoaderScene.js';
+import TitleScene from './scenes/TitleScene.js';
 import GameScene from './scenes/GameScene.js';
 
 /** @type {Phaser.Types.Core.GameConfig} */
@@ -10,7 +11,7 @@ const config = {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: [LoaderScene, GameScene]
+    scene: [LoaderScene, TitleScene, GameScene]
 };
 
 const game = new Phaser.Game(config);
