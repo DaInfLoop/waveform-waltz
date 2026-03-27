@@ -1,4 +1,4 @@
-import { analyseTrack } from "../utils/audio.js";
+import { analyseTrack, estimateBPM } from "../utils/audio.js";
 
 export default class GameScene extends Phaser.Scene {
     /** @type {boolean} */
@@ -17,6 +17,10 @@ export default class GameScene extends Phaser.Scene {
         // set up game objects here
         const raw = this.cache.audio.get('audio1');
         this.eventData = await analyseTrack(raw);
+
+        console.log(`bpm`, estimateBPM(this.eventData))
+
+        console.log(this.eventData)
 
         const sound = /** @type {Phaser.Sound.WebAudioSoundManager} */ (this.sound);
 
